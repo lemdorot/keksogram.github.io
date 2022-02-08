@@ -86,82 +86,72 @@
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/data.js":
-/*!*********************!*\
-  !*** ./src/data.js ***!
-  \*********************/
-/*! exports provided: getComments, getDescription, pictures */
+/***/ "./src/backend.js":
+/*!************************!*\
+  !*** ./src/backend.js ***!
+  \************************/
+/*! exports provided: upload, load */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getComments", function() { return getComments; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getDescription", function() { return getDescription; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pictures", function() { return pictures; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "upload", function() { return upload; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "load", function() { return load; });
+var URLPost = 'https://24.javascript.pages.academy/kekstagram';
+var URLGet = 'https://24.javascript.pages.academy/kekstagram/data';
+var SERVER_ANSWER_OK = 200;
 
+var upload = function (data, onLoad, onError) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = 'json';
 
-var COMMENTS = [
-  'Всё отлично!',
-  'В целом всё неплохо. Но не всё.',
-  'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.',
-  'Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.',
-  'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
-  'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'
-];
-
-var DESCRIPTIONS = [
-  'Тестим новую камеру!',
-  'Затусили с друзьями на море',
-  'Как же круто тут кормят',
-  'Отдыхаем...',
-  'Цените каждое мгновенье. Цените тех, кто рядом с вами и отгоняйте все сомненья. Не обижайте всех словами......',
-  'Вот это тачка!'
-];
-
-var getComments = () => {
-  var commentsCount = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(6, 15);
-  var commentList = [];
-
-  for (var i = 0; i < commentsCount; i++) {
-    var count = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(1, 2);
-    if (count == 1) commentList.push(COMMENTS[Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(0, COMMENTS.length - 1)]);
-    else {
-      var comment1 = COMMENTS[Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(0, COMMENTS.length - 1)];
-      var comment2 = COMMENTS[Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(0, COMMENTS.length - 1)];
-
-      while (true) {
-        if (comment1 == comment2) {
-          comment2 = COMMENTS[Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(0, COMMENTS.length - 1)];
-        } else {
-          break;
-        }
-      }
-
-      commentList.push(comment1 + ' ' + comment2);
+  xhr.addEventListener('load', function () {
+    if (xhr.status === SERVER_ANSWER_OK) {
+      onLoad(xhr.response);
+    } else {
+      onError('Cтатус ответа: ' + xhr.status + ' ' + xhr.statusText);
     }
-  }
-  return commentList;
+  });
+
+  xhr.addEventListener('error', function () {
+    onError('Cтатус ответа: ' + xhr.status + ' ' + xhr.statusText);
+  });
+
+  xhr.addEventListener('timeout', function () {
+    onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
+  });
+
+  xhr.timeout = 5000;
+
+  xhr.open('POST', URLPost);
+  xhr.send(data);
 }
 
-var getDescription = () => {
-  return DESCRIPTIONS[Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(0, DESCRIPTIONS.length - 1)];
-}
+var load = function (onLoad, onError) {
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = 'json';
 
-var fillPictures = () => {
-  var pictures = [];
-  for (var i = 0; i < 25; i++) {
-    pictures.push({
-      url: 'photos/' + (i + 1) + '.jpg',
-      likes: Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(15, 200),
-      comments: getComments(),
-      description: getDescription(),
-    });
-  }
-  return pictures;
-}
+  xhr.addEventListener('load', function () {
+    if (xhr.status === SERVER_ANSWER_OK) {
+      onLoad(xhr.response);
+    } else {
+      onError('Cтатус ответа: ' + xhr.status + ' ' + xhr.statusText);
+    }
+  });
 
-var pictures = fillPictures();
+  xhr.addEventListener('error', function () {
+    onError('Cтатус ответа: ' + xhr.status + ' ' + xhr.statusText);
+  });
+
+  xhr.addEventListener('timeout', function () {
+    onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
+  });
+
+  xhr.timeout = 5000;
+
+  xhr.open('GET', URLGet);
+  xhr.send();
+};
 
 
 /***/ }),
@@ -298,33 +288,30 @@ Object(_validate__WEBPACK_IMPORTED_MODULE_0__["validate"])();
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addPictureLinkHandlers", function() { return addPictureLinkHandlers; });
 /* harmony import */ var _preview__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./preview */ "./src/preview.js");
-/* harmony import */ var _data__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./data */ "./src/data.js");
-
 
 
 var bigPicture = document.querySelector('.big-picture');
 var bigPictureCancel = bigPicture.querySelector('.cancel');
 
-var addClickToPictures = (button, index) => {
+var addClickToPictures = (pictures, button, index) => {
   button.addEventListener('click', function (evt) {
     bigPicture.classList.remove("hidden");
-    Object(_preview__WEBPACK_IMPORTED_MODULE_0__["fillBigPicture"])(_data__WEBPACK_IMPORTED_MODULE_1__["pictures"][index]);
+    Object(_preview__WEBPACK_IMPORTED_MODULE_0__["fillBigPicture"])(pictures[index]);
   });
 }
 
-var addPictureLinkHandlers = () => {
+var addPictureLinkHandlers = (pictures) => {
   var pictureList = document.querySelectorAll('.picture__link');
 
   for (var i = 0; i < pictureList.length; i++) {
     var button = pictureList[i];
-    addClickToPictures(button, i);
+    addClickToPictures(pictures, button, i);
   }
 }
 
 bigPictureCancel.addEventListener('click', () => {
   bigPicture.classList.add("hidden");
 });
-
 
 
 /***/ }),
@@ -341,17 +328,38 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _galary__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./galary */ "./src/galary.js");
 /* harmony import */ var _picture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./picture */ "./src/picture.js");
 /* harmony import */ var _form__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./form */ "./src/form.js");
+/* harmony import */ var _backend__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./backend */ "./src/backend.js");
 
 
 
 
+
+
+var form = document.querySelector('.img-upload__form');
+var pictureFragment = document.createDocumentFragment();
 var pictureList = document.querySelector('.pictures');
-
-pictureList.appendChild(_picture__WEBPACK_IMPORTED_MODULE_1__["pictureFragment"]);
 
 Object(_galary__WEBPACK_IMPORTED_MODULE_0__["addPictureLinkHandlers"])();
 
 Object(_form__WEBPACK_IMPORTED_MODULE_2__["sliderChange"])();
+
+form.addEventListener('submit', function (evt) {
+  debugger;
+  Object(_backend__WEBPACK_IMPORTED_MODULE_3__["upload"])(new FormData(form), function (response) {
+    document.querySelector('.img-upload__overlay').classList.add('hidden');
+  });
+  evt.preventDefault();
+});
+
+Object(_backend__WEBPACK_IMPORTED_MODULE_3__["load"]) (function (pictures) {
+  console.log(pictures);
+  for (var i = 0; i < pictures.length; i++) {
+    pictureFragment.appendChild(Object(_picture__WEBPACK_IMPORTED_MODULE_1__["renderPicture"])(pictures[i]))
+  }
+
+  pictureList.appendChild(pictureFragment);
+  Object(_galary__WEBPACK_IMPORTED_MODULE_0__["addPictureLinkHandlers"])(pictures);
+});
 
 
 /***/ }),
@@ -360,15 +368,12 @@ Object(_form__WEBPACK_IMPORTED_MODULE_2__["sliderChange"])();
 /*!************************!*\
   !*** ./src/picture.js ***!
   \************************/
-/*! exports provided: pictureFragment */
+/*! exports provided: renderPicture */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pictureFragment", function() { return pictureFragment; });
-/* harmony import */ var _data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./data */ "./src/data.js");
-
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderPicture", function() { return renderPicture; });
 var pictureTemplate = document.querySelector('#picture').content;
 
 var renderPicture = (picture) => {
@@ -381,10 +386,6 @@ var renderPicture = (picture) => {
   return pictureElement;
 }
 
-var pictureFragment = document.createDocumentFragment();
-for (var i = 0; i < _data__WEBPACK_IMPORTED_MODULE_0__["pictures"].length; i++) {
-  pictureFragment.appendChild(renderPicture(_data__WEBPACK_IMPORTED_MODULE_0__["pictures"][i]))
-}
 
 
 /***/ }),
@@ -399,16 +400,13 @@ for (var i = 0; i < _data__WEBPACK_IMPORTED_MODULE_0__["pictures"].length; i++) 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fillBigPicture", function() { return fillBigPicture; });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
-
-
 var bigPicture = document.querySelector('.big-picture');
 var socialComments = bigPicture.querySelector('.social__comments');
 
 var createComments = (picture) => {
   var comments = '';
   for (var i = 0; i < 5; i++) {
-    comments = comments + '<li class="social__comment social__comment--text"><img class="social__picture" src="img/avatar-' + Object(_utils__WEBPACK_IMPORTED_MODULE_0__["randomInt"])(1, 6) + '.svg" alt="Аватар комментатора фотографии" width="35" height="35"> <p class="social__text">' + picture.comments[i] + '</p> </li>';
+    comments = comments + '<li class="social__comment social__comment--text"><img class="social__picture" src="'+ picture.comments[i].avatar + '" alt="Аватар комментатора фотографии" width="35" height="35"> <p class="social__text">' + picture.comments[i].message + '</p> </li>';
   }
   return comments;
 }
@@ -426,24 +424,6 @@ var fillBigPicture = (picture) => {
 
 bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden');
 bigPicture.querySelector('.social__comment-loadmore').classList.add('visually-hidden');
-
-
-/***/ }),
-
-/***/ "./src/utils.js":
-/*!**********************!*\
-  !*** ./src/utils.js ***!
-  \**********************/
-/*! exports provided: randomInt */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomInt", function() { return randomInt; });
-var randomInt = (min, max) => {
-  let rand = min + Math.random() * (max + 1 - min);
-  return Math.floor(rand);
-}
 
 
 /***/ }),
