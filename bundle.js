@@ -281,17 +281,21 @@ Object(_validate__WEBPACK_IMPORTED_MODULE_0__["validate"])();
 /*!***********************!*\
   !*** ./src/galary.js ***!
   \***********************/
-/*! exports provided: addPictureLinkHandlers */
+/*! exports provided: renderPictures */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addPictureLinkHandlers", function() { return addPictureLinkHandlers; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderPictures", function() { return renderPictures; });
 /* harmony import */ var _preview__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./preview */ "./src/preview.js");
+/* harmony import */ var _picture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./picture */ "./src/picture.js");
+
 
 
 var bigPicture = document.querySelector('.big-picture');
 var bigPictureCancel = bigPicture.querySelector('.cancel');
+var pictureFragment = document.createDocumentFragment();
+var pictureList = document.querySelector('.pictures');
 
 var addClickToPictures = (pictures, button, index) => {
   button.addEventListener('click', function (evt) {
@@ -307,6 +311,15 @@ var addPictureLinkHandlers = (pictures) => {
     var button = pictureList[i];
     addClickToPictures(pictures, button, i);
   }
+}
+
+var renderPictures = (pictures) => {
+  for (var i = 0; i < pictures.length; i++) {
+    pictureFragment.appendChild(Object(_picture__WEBPACK_IMPORTED_MODULE_1__["renderPicture"])(pictures[i]))
+  }
+
+  pictureList.appendChild(pictureFragment);
+  addPictureLinkHandlers(pictures);
 }
 
 bigPictureCancel.addEventListener('click', () => {
@@ -326,40 +339,108 @@ bigPictureCancel.addEventListener('click', () => {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _galary__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./galary */ "./src/galary.js");
-/* harmony import */ var _picture__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./picture */ "./src/picture.js");
-/* harmony import */ var _form__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./form */ "./src/form.js");
-/* harmony import */ var _backend__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./backend */ "./src/backend.js");
-
+/* harmony import */ var _form__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./form */ "./src/form.js");
+/* harmony import */ var _backend__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./backend */ "./src/backend.js");
+/* harmony import */ var _photo_sorting__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./photo-sorting */ "./src/photo-sorting.js");
 
 
 
 
 
 var form = document.querySelector('.img-upload__form');
-var pictureFragment = document.createDocumentFragment();
-var pictureList = document.querySelector('.pictures');
 
-Object(_galary__WEBPACK_IMPORTED_MODULE_0__["addPictureLinkHandlers"])();
-
-Object(_form__WEBPACK_IMPORTED_MODULE_2__["sliderChange"])();
+Object(_form__WEBPACK_IMPORTED_MODULE_1__["sliderChange"])();
 
 form.addEventListener('submit', function (evt) {
-  debugger;
-  Object(_backend__WEBPACK_IMPORTED_MODULE_3__["upload"])(new FormData(form), function (response) {
+  Object(_backend__WEBPACK_IMPORTED_MODULE_2__["upload"])(new FormData(form), function (response) {
     document.querySelector('.img-upload__overlay').classList.add('hidden');
   });
   evt.preventDefault();
 });
 
-Object(_backend__WEBPACK_IMPORTED_MODULE_3__["load"]) (function (pictures) {
-  console.log(pictures);
-  for (var i = 0; i < pictures.length; i++) {
-    pictureFragment.appendChild(Object(_picture__WEBPACK_IMPORTED_MODULE_1__["renderPicture"])(pictures[i]))
-  }
-
-  pictureList.appendChild(pictureFragment);
-  Object(_galary__WEBPACK_IMPORTED_MODULE_0__["addPictureLinkHandlers"])(pictures);
+Object(_backend__WEBPACK_IMPORTED_MODULE_2__["load"]) (function (data) {
+  Object(_galary__WEBPACK_IMPORTED_MODULE_0__["renderPictures"])(data);
+  Object(_photo_sorting__WEBPACK_IMPORTED_MODULE_3__["photoSorting"])(data);
 });
+
+
+/***/ }),
+
+/***/ "./src/photo-sorting.js":
+/*!******************************!*\
+  !*** ./src/photo-sorting.js ***!
+  \******************************/
+/*! exports provided: photoSorting */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "photoSorting", function() { return photoSorting; });
+/* harmony import */ var _galary__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./galary */ "./src/galary.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+
+
+
+var photoFilterElement = document.querySelector('.img-filters');
+var photoFilterButtonElements = document.querySelectorAll('.img-filters__button');
+
+var photoSorting = function (pictures) {
+  photoFilterElement.classList.remove('img-filters--inactive');
+
+  photoFilterElement.addEventListener('click', function (evt) {
+    for (var i = 0; i < photoFilterButtonElements.length; i++) {
+      photoFilterButtonElements[i].classList.remove('img-filters__button--active');
+    }
+
+    evt.target.classList.add('img-filters__button--active');
+    makeGalleryClear();
+
+    switch (evt.target.id) {
+      case ('filter-popular') :
+        Object(_galary__WEBPACK_IMPORTED_MODULE_0__["renderPictures"])(pictures);
+        break;
+      case ('filter-new') :
+        Object(_galary__WEBPACK_IMPORTED_MODULE_0__["renderPictures"])(getNewPhotos(pictures));
+        break;
+      case ('filter-discussed') :
+        Object(_galary__WEBPACK_IMPORTED_MODULE_0__["renderPictures"])(sortPhotosByComments(pictures));
+        break;
+    }
+  });
+
+  var makeGalleryClear = function () {
+    var picturesToRemove = document.querySelectorAll('.picture__link');
+    picturesToRemove.forEach(function (photo) {
+      photo.remove();
+    });
+  };
+
+  var getRandomPhotos = function () {
+    var newPhotoArr = new Set();
+
+    return function (pictures) {
+      if (newPhotoArr.size != 0) {
+        return Array.from(newPhotoArr);
+      } else {
+        while (true) {
+          newPhotoArr.add(pictures[Object(_utils__WEBPACK_IMPORTED_MODULE_1__["getRandomNumber"])(0, pictures.length - 1)]);
+          if (newPhotoArr.size == 10) {
+            break;
+          }
+        }
+
+        return Array.from(newPhotoArr);
+      }
+    }
+  };
+
+  var getNewPhotos = getRandomPhotos();
+
+  var sortPhotosByComments = function (pictures) {
+    var tempArr = pictures.slice();
+    return  tempArr.sort((a, b) => b.comments.length - a.comments.length);
+  }
+};
 
 
 /***/ }),
@@ -405,7 +486,7 @@ var socialComments = bigPicture.querySelector('.social__comments');
 
 var createComments = (picture) => {
   var comments = '';
-  for (var i = 0; i < 5; i++) {
+  for (var i = 0; i < picture.comments.length; i++) {
     comments = comments + '<li class="social__comment social__comment--text"><img class="social__picture" src="'+ picture.comments[i].avatar + '" alt="Аватар комментатора фотографии" width="35" height="35"> <p class="social__text">' + picture.comments[i].message + '</p> </li>';
   }
   return comments;
@@ -424,6 +505,23 @@ var fillBigPicture = (picture) => {
 
 bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden');
 bigPicture.querySelector('.social__comment-loadmore').classList.add('visually-hidden');
+
+
+/***/ }),
+
+/***/ "./src/utils.js":
+/*!**********************!*\
+  !*** ./src/utils.js ***!
+  \**********************/
+/*! exports provided: getRandomNumber */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRandomNumber", function() { return getRandomNumber; });
+var getRandomNumber = function (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 
 /***/ }),
